@@ -1,0 +1,6 @@
+imutils==0.5.2
+numpy==1.14.0
+opencv-python==3.4.0.12
+pylsd==0.0.2
+scipy==0.18.1
+

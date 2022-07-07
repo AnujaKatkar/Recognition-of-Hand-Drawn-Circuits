@@ -35,13 +35,13 @@ def get_hog() :
 def get_menubar():
     global process_stage;
     active_color  = (0,255,0)
-    passive_color = (96,96,96)
+    passive_color = (0,255,255)
     menubar = np.zeros((60,640,3),np.uint8)
     cv2.rectangle(menubar,(0,0),(640,60),(239,239,239),-1)
     cv2.putText(menubar, "Circuit Recognizer" ,(10,20),cv2.FONT_HERSHEY_SIMPLEX,0.4,passive_color,1,cv2.LINE_AA)
-    cv2.putText(menubar, "Developer@" ,(10,35),cv2.FONT_HERSHEY_SIMPLEX,0.4,passive_color,1,cv2.LINE_AA)
-    cv2.putText(menubar, "Mahmut Aksakalli" ,(82,35),cv2.FONT_HERSHEY_SIMPLEX,0.4,(0,153,76),1,cv2.LINE_AA)
-    cv2.putText(menubar, "2018" ,(10,50),cv2.FONT_HERSHEY_SIMPLEX,0.4,passive_color,1,cv2.LINE_AA)
+    #cv2.putText(menubar, "Developer@" ,(10,35),cv2.FONT_HERSHEY_SIMPLEX,0.4,passive_color,1,cv2.LINE_AA)
+    #cv2.putText(menubar, "Mahmut Aksakalli" ,(82,35),cv2.FONT_HERSHEY_SIMPLEX,0.4,(0,153,76),1,cv2.LINE_AA)
+    #cv2.putText(menubar, "2018" ,(10,50),cv2.FONT_HERSHEY_SIMPLEX,0.4,passive_color,1,cv2.LINE_AA)
     if process_stage == 0:
         cv2.rectangle(menubar,(550,15),(620,45),(0,0,255),-1) ## next
         cv2.putText(menubar, "Segmentation" ,(230,25),cv2.FONT_HERSHEY_SIMPLEX,0.4,active_color,1,cv2.LINE_AA)
@@ -197,9 +197,9 @@ def svm_predict(th2,rects,boxes):
     svm = cv2.ml.SVM_load("svm_data.dat")
     hog = get_hog();
     for x,y,x2,y2 in rects:
-    	region = cv2.resize(th2[y:y2,x:x2],(100,100),interpolation = cv2.INTER_CUBIC)
-    	hog_des = hog.compute(region)
-    	_,result = svm.predict(np.array(hog_des,np.float32).reshape(-1,3249))
+        region = cv2.resize(th2[y:y2,x:x2],(100,100),interpolation = cv2.INTER_CUBIC)
+        hog_des = hog.compute(region)
+        _,result = svm.predict(np.array(hog_des,np.float32).reshape(-1,3249))
         idx = int(result[0][0])+3
         boxes.append([[int(x),int(y),int(x2-x),int(y2-y)],idx])
     return boxes
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     ## endpoint operations
     img = cv2.GaussianBlur(gray,(9,9),0)
     th = cv2.adaptiveThreshold(img,255,cv2.ADAPTIVE_THRESH_GAUSSIAN_C,\
-    		cv2.THRESH_BINARY_INV,11,2)
+            cv2.THRESH_BINARY_INV,11,2)
     th2 = th.copy()
     bw  = thinning(th)
     cv2.imwrite("data/skel.pgm",bw)
@@ -317,14 +317,14 @@ if __name__ == "__main__":
     ## segmentation operations
     ## remove founded symbols and connection lines
     for ((x,y,w,h),idx) in boxes:
-    	th[y:y+h,x:x+w] = 0
+        th[y:y+h,x:x+w] = 0
 
     ## detect vert and hori lines then remove them from binary image
     lsd_lines = lsd(th)
     for line in lsd_lines:
-    	x1,y1,x2,y2,w = line
-    	angle = np.abs(np.rad2deg(np.arctan2(y1 - y2, x1 - x2)))
-    	if (angle<105 and angle>75) or angle>160 or angle<20:
+        x1,y1,x2,y2,w = line
+        angle = np.abs(np.rad2deg(np.arctan2(y1 - y2, x1 - x2)))
+        if (angle<105 and angle>75) or angle>160 or angle<20:
             cv2.line(th,(int(x1),int(y1)),(int(x2),int(y2)),(0,0,0),6)
 
     kernel = np.ones((11,11),np.uint8)
@@ -352,7 +352,7 @@ if __name__ == "__main__":
         if process_stage == 2 and prev_stage == 1:
             ## find nodes and nodes end points
             for ((x,y,w,h),idx) in boxes:
-            	bw[y:y+h,x:x+w]  = 0
+                bw[y:y+h,x:x+w]  = 0
                 th2[y:y+h,x:x+w] = 0
 
             node_closing = cv2.morphologyEx(th2, cv2.MORPH_CLOSE, kernel)
@@ -472,7 +472,10 @@ if __name__ == "__main__":
                 if idx == 0: ## voltage source polarity
                     angle = get_v_s_orientation(x,y,w,h,pairs)
                 if idx == 3: ## diode polarity
-                    angle = get_diode_orientation(x,y,w,h,pairs)
+                    try:	
+                        angle = get_diode_orientation(x,y,w,h,pairs)
+                    except:
+                        pass
                 ## (box_id,type_id,node1_id,node2_id,(x,y) of node1 end, (x,y) of node2 end,angle)
                 comp_ends.append([i,idx,minIdx[0],minIdx[1],min_edg[0],min_edg[1],angle])
                 i = i+1

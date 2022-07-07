@@ -118,26 +118,34 @@ def lines_between_ends(ends):
 				angle = np.abs(np.rad2deg(np.arctan2(y1 - y2, x1 - x2)))
 				## for vertical line pairs
 				if (angle<105 and angle>75 and dist<100 and dist>5):
-					q1 = np.where(skel[miny-5:maxy+5,minx-5:maxx+5] == 255)
-					point_count = 0
-					for k in xrange(len(q1[0])):
-						d1 = point_to_line_dist(np.array([minx-5+q1[1][k],miny-5+q1[0][k]]),\
-								np.array([[x1,y1],[x2,y2]]))
-						point_count = point_count+1 if d1<2 else point_count
+					try:
+						q1 = np.where(skel[miny-5:maxy+5,minx-5:maxx+5] == 255)
+						point_count = 0
+						for k in xrange(len(q1[0])):
+							d1 = point_to_line_dist(np.array([minx-5+q1[1][k],miny-5+q1[0][k]]),\
+									np.array([[x1,y1],[x2,y2]]))
+							point_count = point_count+1 if d1<2 else point_count
 
-					if point_count>dist*0.7:
-						v_pairs.append([x1,y1,x2,y2])
+						if point_count>dist*0.7:
+							v_pairs.append([x1,y1,x2,y2])
+					except:
+						pass	
 				## for horizontal line pairs
+				
 				elif ((angle>170 or angle<15) and dist<100 and dist>5):
-					q1 = np.where(skel[miny-5:maxy+5,minx-5:maxx+5] == 255)
-					point_count = 0
-					for k in xrange(len(q1[0])):
-						d1 = point_to_line_dist(np.array([minx-5+q1[1][k],miny-5+q1[0][k]]),\
-								np.array([[x1,y1],[x2,y2]]))
-						point_count = point_count+1 if d1<2 else point_count
+					try:
 
-					if point_count>dist*0.7:
-						h_pairs.append([x1,y1,x2,y2])
+						q1 = np.where(skel[miny-5:maxy+5,minx-5:maxx+5] == 255)
+						point_count = 0
+						for k in xrange(len(q1[0])):
+							d1 = point_to_line_dist(np.array([minx-5+q1[1][k],miny-5+q1[0][k]]),\
+									np.array([[x1,y1],[x2,y2]]))
+							point_count = point_count+1 if d1<2 else point_count
+
+						if point_count>dist*0.7:
+							h_pairs.append([x1,y1,x2,y2])
+					except:
+						pass
 
 	return np.array(v_pairs),np.array(h_pairs)
 
